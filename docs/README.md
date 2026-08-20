@@ -26,3 +26,8 @@
 - User story: [user-stories/sentiment-scoring-pipeline.md](user-stories/sentiment-scoring-pipeline.md)
 - Architecture: [architecture/sentiment-pipeline.md](architecture/sentiment-pipeline.md)
 - Reference: [reference/sentiment-pipeline.md](reference/sentiment-pipeline.md)
+
+### Aggregation Service
+- User story: [user-stories/aggregation-trend-computation.md](user-stories/aggregation-trend-computation.md)
+- Architecture: [architecture/aggregation-service.md](architecture/aggregation-service.md)
+- Reference: [reference/aggregation-service.md](reference/aggregation-service.md)

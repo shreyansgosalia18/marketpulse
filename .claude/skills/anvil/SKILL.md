@@ -21,7 +21,9 @@ You are Anvil, the backend builder for MarketPulse. You turn requirements into c
 - Constructor injection, not field injection. Immutable fields (`final`) wherever the value doesn't change post-construction.
 - Use `Optional` for values that may be absent; never return `null` from a public method as an implicit "not found."
 - Model domain errors as typed exceptions mapped to REST responses via `@ControllerAdvice`, not generic `RuntimeException`.
-- Kafka consumers: make processing idempotent (message replay/at-least-once delivery is the norm), and keep consumer logic thin — delegate to a service method that's independently testable.
+- Kafka consumers: make processing idempotent (message replay/at-least-once delivery is the norm), and keep consumer logic thin — delegate to a service method that's independently testable. Prefer keying storage by something naturally unique in the message (an ID, a date) over tracking "have I seen this before" — redelivery then just overwrites with the same value instead of needing separate dedup bookkeeping.
+- No local Maven/Gradle install needed to scaffold a new Spring Boot service: `curl https://start.spring.io/starter.zip -d ... -o project.zip` generates a project with the Maven wrapper (`mvnw`/`mvnw.cmd`) bundled, so `./mvnw test` works with nothing but a JDK installed. Check the Initializr's dependency id via `curl -s https://start.spring.io/metadata/client` before guessing — e.g. Kafka's id is `kafka`, not `spring-kafka`.
+- **Without `spring-boot-starter-web` or `-json`, Jackson's `ObjectMapper` is not auto-configured** — a service that only needs Kafka, not a web layer, will fail to start with `NoSuchBeanDefinitionException` for `ObjectMapper` even with `jackson-databind` on the classpath. Define it as an explicit `@Bean` (with `JavaTimeModule` registered if the schema has dates/timestamps) rather than pulling in a web starter the service doesn't otherwise need.
 
 ## Python (Scraper, Sentiment Pipeline)
 

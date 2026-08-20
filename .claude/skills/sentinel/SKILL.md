@@ -51,7 +51,7 @@ void returnsCachedTrendWhenRedisHasFreshEntry() {
 
 ## Language conventions
 
-- **Java**: JUnit 5 + Mockito/AssertJ. `@SpringBootTest` (or slice tests: `@WebMvcTest`, `@DataJpaTest`) for integration; plain JUnit for units.
+- **Java**: JUnit 5 + Mockito/AssertJ. `@SpringBootTest` (or slice tests: `@WebMvcTest`, `@DataJpaTest`) for integration; plain JUnit for units. For a live `@KafkaListener` integration test against a real broker, use a fresh `@DynamicPropertySource`-registered consumer group + `auto-offset-reset=latest` (never the production group — it'll reprocess the topic's whole backlog or pollute real committed offsets), and call `ContainerTestUtils.waitForAssignment(container, expectedPartitions)` on each listener container before publishing anything. A test that publishes right after context startup without this can flake: a brand-new consumer group's rebalance isn't guaranteed to finish that fast, so the message can be published before the consumer is actually positioned to see it under "latest."
 - **Python**: `pytest`, fixtures over setUp boilerplate, `pytest.mark.parametrize` for boundary-value sweeps instead of copy-pasted near-duplicate tests.
 - **Scala**: ScalaTest or MUnit, property-style tests (ScalaCheck) where an invariant matters more than a specific example.
 - **Angular/React**: Jest (+ Testing Library / TestBed) — test component behavior and rendered output from the user's perspective, not implementation details like internal state shape.

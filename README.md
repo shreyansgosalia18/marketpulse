@@ -19,7 +19,7 @@ MarketPulse scrapes stock and mutual fund price data alongside financial news, a
 | [Scraper Service](docs/reference/scraper.md) | Pulls price data + financial news | Python |
 | [Sentiment Pipeline](docs/reference/sentiment-pipeline.md) | Scores news sentiment per ticker | Python (NLP) |
 | [Event Stream](docs/reference/event-stream.md) | Decouples ingestion from processing | Kafka |
-| Aggregation Service | Consumes events, computes trend summaries | Java / Spring Boot |
+| [Aggregation Service](docs/reference/aggregation-service.md) | Consumes events, computes trend summaries | Java / Spring Boot |
 | Storage | Durable historical trend data | PostgreSQL |
 | Cache | Fast lookups for frequently queried tickers | Redis |
 | API | Exposes trend summaries | REST (Spring Boot) |
@@ -56,7 +56,7 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 - [x] Scraper service: financial news ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md)
 - [x] Sentiment scoring pipeline — see [docs/reference/sentiment-pipeline.md](docs/reference/sentiment-pipeline.md)
 - [x] Kafka event schema + producers — see [docs/reference/event-stream.md](docs/reference/event-stream.md)
-- [ ] Aggregation service consumer + trend computation
+- [x] Aggregation service consumer + trend computation — see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md) (in-memory only; no REST API or persistence yet)
 - [ ] PostgreSQL schema + persistence layer
 - [ ] Redis caching layer
 - [ ] REST API
@@ -68,6 +68,7 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 - **Scraper service**: see [docs/reference/scraper.md](docs/reference/scraper.md) for setup, usage, and testing.
 - **Publishing to Kafka**: see [docs/reference/event-stream.md](docs/reference/event-stream.md) for topics, schema, and usage.
 - **Sentiment pipeline**: see [docs/reference/sentiment-pipeline.md](docs/reference/sentiment-pipeline.md) for setup, usage, and testing.
+- **Aggregation service** (Java 21, no system-wide Maven needed — bundles `./mvnw`): see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md) for setup, usage, and testing.
 - Other components: setup instructions will be added as they come online.
 
 ## License
