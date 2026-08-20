@@ -28,7 +28,24 @@ flowchart TD
     TS -->|"recordPriceBar/recordSentiment:<br/>upsert, then cache.evict"| CACHE
 ```
 
-Both listeners are thin: parse the message, delegate to `TrendStore`. A malformed message is logged and skipped — never thrown, so it can't stop the listener from processing the rest of the topic. `TrendCalculator` is a pure, stateless function from stored history to a `TrendSummary`, independently unit-testable with no Spring context, and it did not change at all when storage moved from in-memory maps to PostgreSQL (see [postgres-persistence-layer](../user-stories/postgres-persistence-layer.md)) or when Redis caching was added in front of it (see [redis-caching-layer](../user-stories/redis-caching-layer.md)).
+Both listeners are thin: parse the message, delegate to `TrendStore`. A malformed message is logged and skipped — never thrown, so it can't stop the listener from processing the rest of the topic. `TrendCalculator` is a pure, stateless function from stored history to a `TrendSummary`, independently unit-testable with no Spring context, and it did not change at all when storage moved from in-memory maps to PostgreSQL (see [postgres-persistence-layer](../user-stories/postgres-persistence-layer.md)), when Redis caching was added in front of it (see [redis-caching-layer](../user-stories/redis-caching-layer.md)), or when the REST API was added on top (see [rest-api](../user-stories/rest-api.md)) — `TrendStore` is the only thing any of those four stories ever had to touch.
+
+## HTTP layer
+
+```mermaid
+flowchart LR
+    CLIENT["Swagger UI / curl / future frontend"] -->|GET /api/v1/trends/ticker| TC2[TrendController]
+    CLIENT -->|GET /api/v1/trends/ticker/history| TC2
+    TC2 -->|"getTrendSummary/getPriceHistory"| TS2[TrendStore]
+    TS2 -->|"Optional.empty() or empty list"| TC2
+    TC2 -->|"404"| CLIENT
+    TS2 -->|"data present"| TC2
+    TC2 -->|"200 + TrendSummaryResponse/List of PriceBarResponse"| CLIENT
+    TC2 -. uncaught exception .-> ADVICE[ApiExceptionHandler]
+    ADVICE -->|"500 + structured JSON error"| CLIENT
+```
+
+`TrendController` is a thin translation layer: call `TrendStore`, map `Optional`/empty-list to `404`, map present data to its response DTO. `TrendSummaryResponse`/`PriceBarResponse` exist specifically so the JSON contract doesn't expose `TrendSummary`'s `Optional` fields directly — see the [REST API story](../user-stories/rest-api.md)'s design decisions.
 
 | Module | Responsibility |
 |---|---|
@@ -40,7 +57,11 @@ Both listeners are thin: parse the message, delegate to `TrendStore`. A malforme
 | `persistence/PriceBarRepository.java`, `persistence/SentimentScoreRepository.java` | Plain JDBC (`NamedParameterJdbcTemplate`) upsert + query against PostgreSQL |
 | `kafka/PriceEventListener.java`, `kafka/SentimentEventListener.java` | Thin `@KafkaListener`s — parse, delegate, isolate failures |
 | `kafka/dto/*` | Jackson-mapped DTOs for the two Kafka JSON schemas |
+| `api/TrendController.java` | The two REST endpoints — thin, delegates to `TrendStore` |
+| `api/dto/*` | Response DTOs for the REST API, separate from the internal domain records |
+| `api/ApiExceptionHandler.java` | `@RestControllerAdvice` — structured JSON error body for anything unexpected |
 | `config/JacksonConfig.java` | Explicit `ObjectMapper` bean (see reference doc's Known Limitations for why this was needed) |
+| `config/OpenApiConfig.java` | Swagger/OpenAPI title/description, so `/swagger-ui/index.html` isn't a generic "OpenAPI definition" |
 
 ## Why the cache can never break correctness or availability
 

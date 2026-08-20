@@ -71,4 +71,9 @@ public class TrendStore {
         cache.put(ticker, summary);
         return Optional.of(summary);
     }
+
+    /** Raw price history for a ticker, ordered by trade date - not cached (see the REST API story's scope decisions). */
+    public List<PriceBarRecord> getPriceHistory(String ticker) {
+        return priceBarRepository.findByTicker(ticker);
+    }
 }

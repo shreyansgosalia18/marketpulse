@@ -13,8 +13,8 @@ flowchart LR
     AGG["Aggregation Service (Spring Boot)<br/>✅ DONE (consumer + computation)"]
     PG[("PostgreSQL<br/>✅ DONE (price_bars, sentiment_scores)")]
     REDIS[("Redis cache<br/>✅ DONE (trend summaries, invalidate-on-write)")]
-    API["REST API<br/>⬜ planned"]
-    CONSUMERS["API consumers"]
+    API["REST API + Swagger<br/>✅ DONE (2 endpoints, documented)"]
+    CONSUMERS["Future UI / external consumers<br/>⬜ not built"]
 
     WL ==>|done| SC
     SC ==>|done| KAFKA
@@ -23,12 +23,12 @@ flowchart LR
     KAFKA ==>|done| AGG
     AGG ==>|done| PG
     AGG ==>|done| REDIS
-    PG -.->|planned| API
-    REDIS -.->|planned| API
+    PG ==>|done| API
+    REDIS ==>|done| API
     API -.->|planned| CONSUMERS
 ```
 
-Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not yet wired. The scraper publishes price/news events; the sentiment pipeline consumes news and publishes sentiment events back onto Kafka; the Aggregation Service consumes both, durably persists trend data to PostgreSQL (verified surviving an actual process restart), and caches computed summaries in Redis (verified degrading gracefully with Redis stopped outright). Nothing is queryable via HTTP yet (row 10).
+Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not yet wired. Every roadmap item is now built end to end: scraper → Kafka → sentiment pipeline → Aggregation Service (Postgres-persisted, Redis-cached) → REST API, live-testable via Swagger UI at `/swagger-ui/index.html`. The only thing left is something to actually *call* that API from the outside — a UI or other consumer, not yet built.
 
 ## Build status
 
@@ -43,18 +43,18 @@ Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not ye
 | 7 | Aggregation service consumer + trend computation | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
 | 8 | PostgreSQL schema + persistence layer | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
 | 9 | Redis caching layer | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
-| 10 | REST API | ⬜ Not started | — |
+| 10 | REST API | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
 
-Rows 4–10 mirror the [root README's roadmap](../../README.md#roadmap) exactly — check both when either changes.
+**All 10 roadmap items are done.** Rows 4–10 mirror the [root README's roadmap](../../README.md#roadmap) exactly — check both when either changes. What's next isn't on this list yet: something to actually *consume* the API (a UI, most likely) — see the root README for that conversation.
 
-### Rough build order
+### Build order, for the record
 
-Items 5–9 have real dependencies on each other; 4 and 6 are more independent:
+Items 5–10 had real dependencies on each other; 4 and 6 were more independent:
 
-- **4 (Docker Compose)** has no code dependency on anything else, but 5, 7, 8, and 9 all need a real Kafka/Postgres/Redis to test against — doing this first unblocked the rest of local development.
-- **6 (Sentiment pipeline)** consumes Kafka's news topic and publishes back to it — done, and fully decoupled from the scraper's own code (only depends on the documented `marketpulse.news.raw` schema).
-- **7 (Aggregation Service), 8 (Postgres persistence), and 9 (Redis caching)** — all done: a real Spring Boot Kafka consumer computing trend summaries, durably persisted (verified surviving a real process kill + restart), cached in front of Postgres with invalidate-on-write consistency (verified degrading gracefully with Redis stopped outright — cache down means slower, never wrong or broken). Same decoupling principle as the sentiment pipeline throughout — no code dependency on the Python components, only on the documented Kafka schemas.
-- **10 (REST API)** is what's left — the last item, now that there's real durable/cached data for it to expose.
+- **4 (Docker Compose)** had no code dependency on anything else, but 5, 7, 8, and 9 all needed a real Kafka/Postgres/Redis to test against — doing this first unblocked the rest of local development.
+- **6 (Sentiment pipeline)** consumes Kafka's news topic and publishes back to it — fully decoupled from the scraper's own code (only depends on the documented `marketpulse.news.raw` schema).
+- **7 (Aggregation Service), 8 (Postgres persistence), and 9 (Redis caching)**: a real Spring Boot Kafka consumer computing trend summaries, durably persisted (verified surviving a real process kill + restart), cached in front of Postgres with invalidate-on-write consistency (verified degrading gracefully with Redis stopped outright — cache down means slower, never wrong or broken). Same decoupling principle as the sentiment pipeline throughout — no code dependency on the Python components, only on the documented Kafka schemas.
+- **10 (REST API)** came last, now that there was real durable/cached data for it to expose — two endpoints, documented and testable via Swagger UI.
 
 ## Component-level diagrams
 
