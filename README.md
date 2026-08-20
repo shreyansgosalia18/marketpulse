@@ -16,7 +16,7 @@ MarketPulse scrapes stock and mutual fund price data alongside financial news, a
 
 | Component | Responsibility | Tech |
 |---|---|---|
-| Scraper Service | Pulls price data + financial news | Python |
+| [Scraper Service](docs/reference/scraper.md) | Pulls price data + financial news | Python |
 | Sentiment Pipeline | Scores news sentiment per ticker | Python (NLP) |
 | Event Stream | Decouples ingestion from processing | Kafka |
 | Aggregation Service | Consumes events, computes trend summaries | Java / Spring Boot |
@@ -44,9 +44,13 @@ GET /api/v1/trends/{ticker}          # current trend summary for a ticker/fund
 GET /api/v1/trends/{ticker}/history  # historical trend data
 ```
 
+## Documentation
+
+Full docs — user stories, architecture diagrams, and per-component reference — live under [docs/](docs/README.md).
+
 ## Roadmap
 
-- [ ] Scraper service: price data ingestion
+- [x] Scraper service: price data ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md) (fetch only; not yet wired to Kafka)
 - [ ] Scraper service: financial news ingestion
 - [ ] Sentiment scoring pipeline
 - [ ] Kafka event schema + producers
@@ -58,7 +62,8 @@ GET /api/v1/trends/{ticker}/history  # historical trend data
 
 ## Local development
 
-_Setup instructions will be added as components come online._
+- **Scraper service**: see [docs/reference/scraper.md](docs/reference/scraper.md) for setup, usage, and testing.
+- Other components: setup instructions will be added as they come online.
 
 ## License
 
