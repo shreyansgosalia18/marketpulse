@@ -21,7 +21,7 @@ MarketPulse scrapes stock and mutual fund price data alongside financial news, a
 | [Event Stream](docs/reference/event-stream.md) | Decouples ingestion from processing | Kafka |
 | [Aggregation Service](docs/reference/aggregation-service.md) | Consumes events, computes trend summaries | Java / Spring Boot |
 | [Storage](docs/reference/aggregation-service.md) | Durable historical trend data | PostgreSQL |
-| Cache | Fast lookups for frequently queried tickers | Redis |
+| [Cache](docs/reference/aggregation-service.md) | Fast lookups for frequently queried tickers | Redis |
 | API | Exposes trend summaries | REST (Spring Boot) |
 
 ```
@@ -58,7 +58,7 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 - [x] Kafka event schema + producers — see [docs/reference/event-stream.md](docs/reference/event-stream.md)
 - [x] Aggregation service consumer + trend computation — see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md)
 - [x] PostgreSQL schema + persistence layer — see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md) (verified surviving a real process restart)
-- [ ] Redis caching layer
+- [x] Redis caching layer — see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md) (verified degrading gracefully with Redis stopped outright)
 - [ ] REST API
 - [x] Docker Compose for local dev — see [docs/reference/local-dev.md](docs/reference/local-dev.md)
 

@@ -28,6 +28,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import com.marketpulse.aggregation.trend.TrendStore;
+import com.marketpulse.aggregation.trend.TrendSummaryCache;
 
 /**
  * Live integration test against the real local Kafka broker (see
@@ -48,6 +49,9 @@ class AggregationServiceIntegrationTest {
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private TrendSummaryCache cache;
 
     private static KafkaProducer<String, String> producer;
 
@@ -91,6 +95,7 @@ class AggregationServiceIntegrationTest {
         if (ticker == null) {
             return;
         }
+        cache.evict(ticker);
         jdbcTemplate.update("DELETE FROM price_bars WHERE ticker = :ticker", new MapSqlParameterSource("ticker", ticker));
         jdbcTemplate.update(
                 "DELETE FROM sentiment_scores WHERE ticker = :ticker", new MapSqlParameterSource("ticker", ticker));

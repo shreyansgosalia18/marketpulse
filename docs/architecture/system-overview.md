@@ -12,7 +12,7 @@ flowchart LR
     KAFKA[("Kafka: raw price/news events<br/>+ sentiment events<br/>✅ scraper + sentiment + aggregation wired")]
     AGG["Aggregation Service (Spring Boot)<br/>✅ DONE (consumer + computation)"]
     PG[("PostgreSQL<br/>✅ DONE (price_bars, sentiment_scores)")]
-    REDIS[("Redis cache<br/>⬜ not wired (container ready)")]
+    REDIS[("Redis cache<br/>✅ DONE (trend summaries, invalidate-on-write)")]
     API["REST API<br/>⬜ planned"]
     CONSUMERS["API consumers"]
 
@@ -22,13 +22,13 @@ flowchart LR
     SENT ==>|done| KAFKA
     KAFKA ==>|done| AGG
     AGG ==>|done| PG
-    AGG -.->|planned| REDIS
+    AGG ==>|done| REDIS
     PG -.->|planned| API
     REDIS -.->|planned| API
     API -.->|planned| CONSUMERS
 ```
 
-Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not yet wired. The scraper publishes price/news events; the sentiment pipeline consumes news and publishes sentiment events back onto Kafka; the Aggregation Service consumes both and durably persists trend data to PostgreSQL — verified surviving an actual process restart. Redis is still just a runnable container with no application code talking to it (row 9), and nothing is queryable via HTTP yet (row 10).
+Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not yet wired. The scraper publishes price/news events; the sentiment pipeline consumes news and publishes sentiment events back onto Kafka; the Aggregation Service consumes both, durably persists trend data to PostgreSQL (verified surviving an actual process restart), and caches computed summaries in Redis (verified degrading gracefully with Redis stopped outright). Nothing is queryable via HTTP yet (row 10).
 
 ## Build status
 
@@ -42,19 +42,19 @@ Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not ye
 | 6 | Sentiment scoring pipeline | ✅ Done | [reference/sentiment-pipeline.md](../reference/sentiment-pipeline.md) |
 | 7 | Aggregation service consumer + trend computation | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
 | 8 | PostgreSQL schema + persistence layer | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
-| 9 | Redis caching layer | ⬜ Not started | — |
+| 9 | Redis caching layer | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
 | 10 | REST API | ⬜ Not started | — |
 
 Rows 4–10 mirror the [root README's roadmap](../../README.md#roadmap) exactly — check both when either changes.
 
 ### Rough build order
 
-Items 5–10 have real dependencies on each other; 4 and 6 are more independent:
+Items 5–9 have real dependencies on each other; 4 and 6 are more independent:
 
 - **4 (Docker Compose)** has no code dependency on anything else, but 5, 7, 8, and 9 all need a real Kafka/Postgres/Redis to test against — doing this first unblocked the rest of local development.
 - **6 (Sentiment pipeline)** consumes Kafka's news topic and publishes back to it — done, and fully decoupled from the scraper's own code (only depends on the documented `marketpulse.news.raw` schema).
-- **7 (Aggregation Service)** and **8 (Postgres persistence)** — both done: a real Spring Boot Kafka consumer computing trend summaries, now durably persisted (verified surviving a real process kill + restart). Same decoupling principle as the sentiment pipeline — no code dependency on the Python components, only on the documented Kafka schemas.
-- **9 → 10** is what's left: Redis caching needs to exist before the REST API can read from it (or the API could read Postgres directly and add caching later — an open question for that story).
+- **7 (Aggregation Service), 8 (Postgres persistence), and 9 (Redis caching)** — all done: a real Spring Boot Kafka consumer computing trend summaries, durably persisted (verified surviving a real process kill + restart), cached in front of Postgres with invalidate-on-write consistency (verified degrading gracefully with Redis stopped outright — cache down means slower, never wrong or broken). Same decoupling principle as the sentiment pipeline throughout — no code dependency on the Python components, only on the documented Kafka schemas.
+- **10 (REST API)** is what's left — the last item, now that there's real durable/cached data for it to expose.
 
 ## Component-level diagrams
 

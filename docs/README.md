@@ -28,6 +28,6 @@
 - Reference: [reference/sentiment-pipeline.md](reference/sentiment-pipeline.md)
 
 ### Aggregation Service
-- User stories: [user-stories/aggregation-trend-computation.md](user-stories/aggregation-trend-computation.md), [user-stories/postgres-persistence-layer.md](user-stories/postgres-persistence-layer.md)
+- User stories: [user-stories/aggregation-trend-computation.md](user-stories/aggregation-trend-computation.md), [user-stories/postgres-persistence-layer.md](user-stories/postgres-persistence-layer.md), [user-stories/redis-caching-layer.md](user-stories/redis-caching-layer.md)
 - Architecture: [architecture/aggregation-service.md](architecture/aggregation-service.md)
 - Reference: [reference/aggregation-service.md](reference/aggregation-service.md)
