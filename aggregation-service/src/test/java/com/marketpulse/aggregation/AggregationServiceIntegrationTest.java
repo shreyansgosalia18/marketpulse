@@ -13,11 +13,14 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
@@ -43,7 +46,12 @@ class AggregationServiceIntegrationTest {
     @Autowired
     private KafkaListenerEndpointRegistry registry;
 
+    @Autowired
+    private NamedParameterJdbcTemplate jdbcTemplate;
+
     private static KafkaProducer<String, String> producer;
+
+    private String ticker;
 
     @DynamicPropertySource
     static void freshConsumerGroup(DynamicPropertyRegistry registry) {
@@ -56,8 +64,13 @@ class AggregationServiceIntegrationTest {
     }
 
     @BeforeAll
-    static void checkKafkaReachableAndSetUpProducer() {
+    static void checkKafkaAndPostgresReachableAndSetUpProducer() {
+        // TrendStore now needs a working DataSource to construct at all
+        // (see docs/user-stories/postgres-persistence-layer.md), so the
+        // whole Spring context fails to start without Postgres too - check
+        // both before letting @SpringBootTest attempt context creation.
         Assumptions.assumeTrue(isReachable("127.0.0.1", 9092), "Kafka broker not reachable at 127.0.0.1:9092");
+        Assumptions.assumeTrue(isReachable("127.0.0.1", 5432), "Postgres not reachable at 127.0.0.1:5432");
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "127.0.0.1:9092");
@@ -71,6 +84,16 @@ class AggregationServiceIntegrationTest {
         if (producer != null) {
             producer.close();
         }
+    }
+
+    @AfterEach
+    void cleanUpTestData() {
+        if (ticker == null) {
+            return;
+        }
+        jdbcTemplate.update("DELETE FROM price_bars WHERE ticker = :ticker", new MapSqlParameterSource("ticker", ticker));
+        jdbcTemplate.update(
+                "DELETE FROM sentiment_scores WHERE ticker = :ticker", new MapSqlParameterSource("ticker", ticker));
     }
 
     private static boolean isReachable(String host, int port) {
@@ -94,7 +117,7 @@ class AggregationServiceIntegrationTest {
             ContainerTestUtils.waitForAssignment(container, 1);
         }
 
-        String ticker = "TEST" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        ticker = "TEST" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
         String priceDay1 = """
                 {"schema_version":1,"event_type":"price_bar","ticker":"%s","trade_date":"2024-01-01",

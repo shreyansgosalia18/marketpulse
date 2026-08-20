@@ -1,18 +1,36 @@
 package com.marketpulse.aggregation.trend;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import com.marketpulse.aggregation.persistence.PriceBarRepository;
+import com.marketpulse.aggregation.persistence.SentimentScoreRepository;
+
+/**
+ * Idempotency itself is now enforced by Postgres's ON CONFLICT upsert, not
+ * TrendStore - see PersistenceIntegrationTest for that. These tests cover
+ * what's still TrendStore's own responsibility: delegating to the right
+ * repository, and correctly assembling repository results into what
+ * TrendCalculator expects.
+ */
 class TrendStoreTest {
 
     @Test
     void getTrendSummaryReturnsEmptyForUnknownTicker() {
-        TrendStore store = new TrendStore();
+        PriceBarRepository priceBarRepository = mock(PriceBarRepository.class);
+        SentimentScoreRepository sentimentScoreRepository = mock(SentimentScoreRepository.class);
+        when(priceBarRepository.findByTicker("UNKNOWN")).thenReturn(List.of());
+        TrendStore store = new TrendStore(priceBarRepository, sentimentScoreRepository);
 
         Optional<TrendSummary> summary = store.getTrendSummary("UNKNOWN");
 
@@ -20,54 +38,44 @@ class TrendStoreTest {
     }
 
     @Test
-    void recordsPriceBarByTradeDate() {
-        TrendStore store = new TrendStore();
-
-        store.recordPriceBar(bar(LocalDate.of(2024, 1, 1), 100.0));
-        store.recordPriceBar(bar(LocalDate.of(2024, 1, 2), 105.0));
+    void getTrendSummaryComputesFromRepositoryData() {
+        PriceBarRepository priceBarRepository = mock(PriceBarRepository.class);
+        SentimentScoreRepository sentimentScoreRepository = mock(SentimentScoreRepository.class);
+        when(priceBarRepository.findByTicker("AAPL")).thenReturn(List.of(
+                bar(LocalDate.of(2024, 1, 1), 100.0),
+                bar(LocalDate.of(2024, 1, 2), 105.0)));
+        when(sentimentScoreRepository.findByTicker("AAPL")).thenReturn(List.of(sentiment("uuid-1", 0.5)));
+        TrendStore store = new TrendStore(priceBarRepository, sentimentScoreRepository);
 
         TrendSummary summary = store.getTrendSummary("AAPL").orElseThrow();
+
         assertThat(summary.latestClose()).isEqualTo(105.0);
         assertThat(summary.percentChange()).isPresent();
+        assertThat(summary.averageSentiment()).contains(0.5);
     }
 
     @Test
-    void recordingSamePriceBarTwiceIsIdempotent() {
-        TrendStore store = new TrendStore();
-        store.recordPriceBar(bar(LocalDate.of(2024, 1, 1), 100.0));
-        store.recordPriceBar(bar(LocalDate.of(2024, 1, 2), 105.0));
+    void recordPriceBarDelegatesToRepository() {
+        PriceBarRepository priceBarRepository = mock(PriceBarRepository.class);
+        SentimentScoreRepository sentimentScoreRepository = mock(SentimentScoreRepository.class);
+        TrendStore store = new TrendStore(priceBarRepository, sentimentScoreRepository);
+        PriceBarRecord record = bar(LocalDate.of(2024, 1, 1), 100.0);
 
-        // Redelivery of the same message - same date, same values.
-        store.recordPriceBar(bar(LocalDate.of(2024, 1, 2), 105.0));
+        store.recordPriceBar(record);
 
-        TrendSummary summary = store.getTrendSummary("AAPL").orElseThrow();
-        assertThat(summary.latestClose()).isEqualTo(105.0);
-        assertThat(summary.percentChange().get()).isEqualTo(5.0, org.assertj.core.data.Offset.offset(0.0001));
+        verify(priceBarRepository).upsert(eq(record));
     }
 
     @Test
-    void recordsSentimentByArticleUuid() {
-        TrendStore store = new TrendStore();
-        store.recordPriceBar(bar(LocalDate.of(2024, 1, 1), 100.0));
-        store.recordSentiment(sentiment("uuid-1", 0.5));
+    void recordSentimentDelegatesToRepository() {
+        PriceBarRepository priceBarRepository = mock(PriceBarRepository.class);
+        SentimentScoreRepository sentimentScoreRepository = mock(SentimentScoreRepository.class);
+        TrendStore store = new TrendStore(priceBarRepository, sentimentScoreRepository);
+        SentimentRecord record = sentiment("uuid-1", 0.5);
 
-        TrendSummary summary = store.getTrendSummary("AAPL").orElseThrow();
-        assertThat(summary.averageSentiment()).isPresent();
-        assertThat(summary.averageSentiment().get()).isEqualTo(0.5);
-    }
+        store.recordSentiment(record);
 
-    @Test
-    void recordingSameSentimentTwiceIsIdempotent() {
-        TrendStore store = new TrendStore();
-        store.recordPriceBar(bar(LocalDate.of(2024, 1, 1), 100.0));
-        store.recordSentiment(sentiment("uuid-1", 0.5));
-
-        // Redelivery of the same article's sentiment - must not double-count
-        // toward the average.
-        store.recordSentiment(sentiment("uuid-1", 0.5));
-
-        TrendSummary summary = store.getTrendSummary("AAPL").orElseThrow();
-        assertThat(summary.averageSentiment().get()).isEqualTo(0.5);
+        verify(sentimentScoreRepository).upsert(eq(record));
     }
 
     private static PriceBarRecord bar(LocalDate date, double close) {

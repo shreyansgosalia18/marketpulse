@@ -20,7 +20,7 @@ MarketPulse scrapes stock and mutual fund price data alongside financial news, a
 | [Sentiment Pipeline](docs/reference/sentiment-pipeline.md) | Scores news sentiment per ticker | Python (NLP) |
 | [Event Stream](docs/reference/event-stream.md) | Decouples ingestion from processing | Kafka |
 | [Aggregation Service](docs/reference/aggregation-service.md) | Consumes events, computes trend summaries | Java / Spring Boot |
-| Storage | Durable historical trend data | PostgreSQL |
+| [Storage](docs/reference/aggregation-service.md) | Durable historical trend data | PostgreSQL |
 | Cache | Fast lookups for frequently queried tickers | Redis |
 | API | Exposes trend summaries | REST (Spring Boot) |
 
@@ -56,8 +56,8 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 - [x] Scraper service: financial news ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md)
 - [x] Sentiment scoring pipeline — see [docs/reference/sentiment-pipeline.md](docs/reference/sentiment-pipeline.md)
 - [x] Kafka event schema + producers — see [docs/reference/event-stream.md](docs/reference/event-stream.md)
-- [x] Aggregation service consumer + trend computation — see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md) (in-memory only; no REST API or persistence yet)
-- [ ] PostgreSQL schema + persistence layer
+- [x] Aggregation service consumer + trend computation — see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md)
+- [x] PostgreSQL schema + persistence layer — see [docs/reference/aggregation-service.md](docs/reference/aggregation-service.md) (verified surviving a real process restart)
 - [ ] Redis caching layer
 - [ ] REST API
 - [x] Docker Compose for local dev — see [docs/reference/local-dev.md](docs/reference/local-dev.md)

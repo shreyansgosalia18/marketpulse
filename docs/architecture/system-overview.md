@@ -10,8 +10,8 @@ flowchart LR
     SC["Scraper Service (Python)<br/>price + news + relevance filter<br/>✅ DONE"]
     SENT["Sentiment Pipeline (Python/NLP)<br/>✅ DONE"]
     KAFKA[("Kafka: raw price/news events<br/>+ sentiment events<br/>✅ scraper + sentiment + aggregation wired")]
-    AGG["Aggregation Service (Spring Boot)<br/>✅ DONE (consumer + in-memory computation)"]
-    PG[("PostgreSQL<br/>⬜ not wired (container ready)")]
+    AGG["Aggregation Service (Spring Boot)<br/>✅ DONE (consumer + computation)"]
+    PG[("PostgreSQL<br/>✅ DONE (price_bars, sentiment_scores)")]
     REDIS[("Redis cache<br/>⬜ not wired (container ready)")]
     API["REST API<br/>⬜ planned"]
     CONSUMERS["API consumers"]
@@ -21,14 +21,14 @@ flowchart LR
     KAFKA ==>|done| SENT
     SENT ==>|done| KAFKA
     KAFKA ==>|done| AGG
-    AGG -.->|planned| PG
+    AGG ==>|done| PG
     AGG -.->|planned| REDIS
     PG -.->|planned| API
     REDIS -.->|planned| API
     API -.->|planned| CONSUMERS
 ```
 
-Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not yet wired. The scraper publishes price/news events; the sentiment pipeline consumes news and publishes sentiment events back onto Kafka; the Aggregation Service consumes both and computes trend summaries **in memory only** — Postgres/Redis are still just runnable containers with no application code talking to them yet (rows 8, 9), so nothing is persisted or queryable via HTTP (row 10) at this point.
+Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not yet wired. The scraper publishes price/news events; the sentiment pipeline consumes news and publishes sentiment events back onto Kafka; the Aggregation Service consumes both and durably persists trend data to PostgreSQL — verified surviving an actual process restart. Redis is still just a runnable container with no application code talking to it (row 9), and nothing is queryable via HTTP yet (row 10).
 
 ## Build status
 
@@ -41,7 +41,7 @@ Solid arrow (`==>`) = built and tested. Dashed arrows (`-.->`) = planned, not ye
 | 5 | Kafka event schema + producers | ✅ Done | [reference/event-stream.md](../reference/event-stream.md) |
 | 6 | Sentiment scoring pipeline | ✅ Done | [reference/sentiment-pipeline.md](../reference/sentiment-pipeline.md) |
 | 7 | Aggregation service consumer + trend computation | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
-| 8 | PostgreSQL schema + persistence layer | ⬜ Not started | — |
+| 8 | PostgreSQL schema + persistence layer | ✅ Done | [reference/aggregation-service.md](../reference/aggregation-service.md) |
 | 9 | Redis caching layer | ⬜ Not started | — |
 | 10 | REST API | ⬜ Not started | — |
 
@@ -53,8 +53,8 @@ Items 5–10 have real dependencies on each other; 4 and 6 are more independent:
 
 - **4 (Docker Compose)** has no code dependency on anything else, but 5, 7, 8, and 9 all need a real Kafka/Postgres/Redis to test against — doing this first unblocked the rest of local development.
 - **6 (Sentiment pipeline)** consumes Kafka's news topic and publishes back to it — done, and fully decoupled from the scraper's own code (only depends on the documented `marketpulse.news.raw` schema).
-- **7 (Aggregation Service)** — done: a real Spring Boot Kafka consumer computing trend summaries in memory. Same decoupling principle as the sentiment pipeline — no code dependency on the Python components, only on the documented Kafka schemas.
-- **(8 and 9) → 10** is the remaining chain: persistence/caching need to exist with something to back before the API can read from them.
+- **7 (Aggregation Service)** and **8 (Postgres persistence)** — both done: a real Spring Boot Kafka consumer computing trend summaries, now durably persisted (verified surviving a real process kill + restart). Same decoupling principle as the sentiment pipeline — no code dependency on the Python components, only on the documented Kafka schemas.
+- **9 → 10** is what's left: Redis caching needs to exist before the REST API can read from it (or the API could read Postgres directly and add caching later — an open question for that story).
 
 ## Component-level diagrams
 
