@@ -72,6 +72,7 @@ Keep each story small enough to map to one PR-sized unit of work. If a request n
 - Use Mermaid (` ```mermaid `) — it renders natively on GitHub and in Artifacts, no external tooling needed. Don't diagram things a sentence already explains.
 - Every diagram must reflect the real data flow (what's sync vs. event-driven, what's cached vs. persisted) — never a simplified version that hides a component.
 - Update `architecture/system-overview.md` whenever a change alters the cross-component flow; add/update `architecture/<component>.md` whenever a component's internal design changes materially.
+- `architecture/system-overview.md` is the canonical build-status view — its diagram and status table must stay in lockstep with the [root README's roadmap](../../../README.md#roadmap). Whenever a roadmap checkbox flips, update both in the same pass.
 
 ## Documenting changes
 

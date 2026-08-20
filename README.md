@@ -37,6 +37,8 @@ MarketPulse scrapes stock and mutual fund price data alongside financial news, a
                                         [REST API] --> consumers
 ```
 
+This shows the target architecture. For what's actually built vs. still planned right now, see the canonical status diagram at [docs/architecture/system-overview.md](docs/architecture/system-overview.md).
+
 ## Planned API
 
 ```
@@ -58,10 +60,11 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 - [ ] PostgreSQL schema + persistence layer
 - [ ] Redis caching layer
 - [ ] REST API
-- [ ] Docker Compose for local dev
+- [x] Docker Compose for local dev — see [docs/reference/local-dev.md](docs/reference/local-dev.md)
 
 ## Local development
 
+- **Kafka, PostgreSQL, Redis**: `docker compose up -d` — see [docs/reference/local-dev.md](docs/reference/local-dev.md) for details, ports, and credentials.
 - **Scraper service**: see [docs/reference/scraper.md](docs/reference/scraper.md) for setup, usage, and testing.
 - Other components: setup instructions will be added as they come online.
 
