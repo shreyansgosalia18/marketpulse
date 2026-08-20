@@ -33,3 +33,5 @@ So that sentiment scoring has news text to work with per ticker
 ## Status
 
 Implemented and tested — see [reference/scraper.md](../reference/scraper.md) for usage and [architecture/scraper.md](../architecture/scraper.md) for the internal design.
+
+**Note:** `NewsScraper.fetch_news()`'s output is additionally relevance-filtered before it's returned — see [scraper-news-relevance-filtering](scraper-news-relevance-filtering.md). The acceptance criteria above describe ingestion in isolation; the article list a caller actually receives has already had obviously-irrelevant results removed.

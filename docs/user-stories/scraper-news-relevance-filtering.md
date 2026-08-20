@@ -19,6 +19,7 @@ Verified live (see [reference/scraper.md](../reference/scraper.md#known-limitati
 - Given an article title that doesn't mention the ticker or the company name, when filtering runs, then that article is excluded from the result.
 - Given a query that resolves no matching company (e.g. an unknown/bogus symbol), when news is fetched, then the result is an empty article list rather than the source's generic/trending fallback.
 - Given filtering removes every raw article for a ticker, when fetched, then the result is still a success (`ok=True`) with an empty list — filtering to zero is not an error, consistent with [scraper-news-ingestion](scraper-news-ingestion.md)'s "no news is not an error" rule.
+- Given the source response's `quotes` array, when resolving a ticker's company name, then the matching entry's name is returned; given no quote matches the ticker, or the `quotes` field is absent entirely, then no company name is resolved (`None`) rather than raising — this is what lets an unresolvable ticker fall through to an empty result instead of erroring.
 
 ## Explicitly out of scope
 
@@ -31,9 +32,10 @@ Verified live (see [reference/scraper.md](../reference/scraper.md#known-limitati
 |---|---|
 | Title mentions ticker or company name → kept | `test_keeps_article_mentioning_ticker_symbol`, `test_keeps_article_mentioning_company_name` |
 | Corporate suffix not required to match | `test_matches_company_name_without_corporate_suffix` |
-| Title mentions neither → excluded | `test_excludes_article_not_mentioning_ticker_or_company` |
-| Unresolved company name → empty result, not fallback noise | `test_unresolvable_ticker_yields_empty_articles_not_error` |
+| Title mentions neither → excluded | `test_excludes_article_not_mentioning_ticker_or_company`, `test_irrelevant_articles_are_filtered_out` (integration, through `NewsScraper`) |
+| Unresolved company name → empty result, not fallback noise | `test_unresolvable_ticker_yields_empty_articles_not_error`, `test_unresolvable_ticker_yields_empty_articles_not_fallback_noise` (integration, through `NewsScraper`) |
 | Filtered-to-zero is still a success | `test_filtering_to_zero_articles_is_still_ok` |
+| Company name resolved from matching quote, or `None` if unresolved | `test_extract_company_name_finds_matching_quote`, `test_extract_company_name_returns_none_when_no_matching_quote`, `test_extract_company_name_returns_none_when_quotes_field_is_missing` |
 
 ## Status
 
