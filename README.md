@@ -64,7 +64,7 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 
 ## Local development
 
-- **Kafka, PostgreSQL, Redis**: `docker compose up -d` — see [docs/reference/local-dev.md](docs/reference/local-dev.md) for details, ports, and credentials.
+- **Kafka, PostgreSQL, Redis**: `docker compose --env-file env/dev.env up -d` — see [docs/reference/local-dev.md](docs/reference/local-dev.md) for details, ports, and credentials.
 - **Scraper service**: see [docs/reference/scraper.md](docs/reference/scraper.md) for setup, usage, and testing.
 - Other components: setup instructions will be added as they come online.
 
