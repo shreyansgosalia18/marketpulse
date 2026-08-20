@@ -7,6 +7,6 @@
 ## By component
 
 ### Scraper Service
-- User story: [user-stories/scraper-price-ingestion.md](user-stories/scraper-price-ingestion.md)
+- User stories: [user-stories/scraper-price-ingestion.md](user-stories/scraper-price-ingestion.md), [user-stories/scraper-news-ingestion.md](user-stories/scraper-news-ingestion.md), [user-stories/scraper-news-relevance-filtering.md](user-stories/scraper-news-relevance-filtering.md)
 - Architecture: [architecture/scraper.md](architecture/scraper.md) (see also [architecture/system-overview.md](architecture/system-overview.md))
 - Reference: [reference/scraper.md](reference/scraper.md)

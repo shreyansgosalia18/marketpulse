@@ -51,7 +51,7 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 ## Roadmap
 
 - [x] Scraper service: price data ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md) (fetch only; not yet wired to Kafka)
-- [ ] Scraper service: financial news ingestion
+- [x] Scraper service: financial news ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md) (fetch only; not yet wired to Kafka)
 - [ ] Sentiment scoring pipeline
 - [ ] Kafka event schema + producers
 - [ ] Aggregation service consumer + trend computation

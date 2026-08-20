@@ -52,6 +52,21 @@ Acceptance criteria:
 
 Keep each story small enough to map to one PR-sized unit of work. If a request naturally splits into several stories, write separate files rather than one bloated story.
 
+**The story's acceptance criteria are the baseline for both dev and test — not a wishlist that drifts from what actually got built.** Two rules that keep that true:
+
+1. **Before implementation**, Anvil builds to the acceptance criteria as written. If dev work uncovers a necessary criterion the story missed (an edge case, a validation rule that turns out to matter), add it to the story rather than silently handling it in code with no criterion behind it.
+2. **After Sentinel writes tests**, add a "Test coverage" table to the story mapping every acceptance criterion to the test(s) that verify it:
+
+   ```markdown
+   ## Test coverage
+
+   | Acceptance criterion | Test(s) |
+   |---|---|
+   | <short paraphrase of the criterion> | `test_name_one`, `test_name_two` |
+   ```
+
+   If a test exists that isn't traceable to any criterion, that's a sign the story is missing one — add the criterion, don't leave an orphan test. If a criterion has no test, that's a gap — flag it to Sentinel rather than marking the story done.
+
 ## Architecture diagrams
 
 - Use Mermaid (` ```mermaid `) — it renders natively on GitHub and in Artifacts, no external tooling needed. Don't diagram things a sentence already explains.

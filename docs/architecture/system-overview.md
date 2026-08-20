@@ -7,11 +7,10 @@ Component breakdown and tech choices: see the [root README](../../README.md#arch
 ```mermaid
 flowchart LR
     subgraph Implemented
-        WL[Watchlist config] --> SC["Scraper Service (Python)"]
+        WL[Watchlist config] --> SC["Scraper Service (Python)<br/>price + news fetch"]
     end
     subgraph Planned
         SC -.-> KAFKA[(Kafka: raw price + sentiment events)]
-        NEWS[News scraping] -.-> KAFKA
         KAFKA -.-> AGG["Aggregation Service (Spring Boot)"]
         AGG -.-> PG[(PostgreSQL)]
         AGG -.-> REDIS[(Redis cache)]
