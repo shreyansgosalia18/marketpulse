@@ -1,1 +1,4 @@
 requests>=2.31
+# Pinned, not >=2.0: kafka-python 3.x is an async rewrite that isn't
+# compatible with how this project uses it (see docs/reference/event-stream.md).
+kafka-python==2.3.2

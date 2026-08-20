@@ -18,7 +18,7 @@ MarketPulse scrapes stock and mutual fund price data alongside financial news, a
 |---|---|---|
 | [Scraper Service](docs/reference/scraper.md) | Pulls price data + financial news | Python |
 | Sentiment Pipeline | Scores news sentiment per ticker | Python (NLP) |
-| Event Stream | Decouples ingestion from processing | Kafka |
+| [Event Stream](docs/reference/event-stream.md) | Decouples ingestion from processing | Kafka |
 | Aggregation Service | Consumes events, computes trend summaries | Java / Spring Boot |
 | Storage | Durable historical trend data | PostgreSQL |
 | Cache | Fast lookups for frequently queried tickers | Redis |
@@ -52,10 +52,10 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 
 ## Roadmap
 
-- [x] Scraper service: price data ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md) (fetch only; not yet wired to Kafka)
-- [x] Scraper service: financial news ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md) (fetch only; not yet wired to Kafka)
+- [x] Scraper service: price data ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md)
+- [x] Scraper service: financial news ingestion — see [docs/reference/scraper.md](docs/reference/scraper.md)
 - [ ] Sentiment scoring pipeline
-- [ ] Kafka event schema + producers
+- [x] Kafka event schema + producers — see [docs/reference/event-stream.md](docs/reference/event-stream.md) (producers only; no consumers yet)
 - [ ] Aggregation service consumer + trend computation
 - [ ] PostgreSQL schema + persistence layer
 - [ ] Redis caching layer
@@ -66,6 +66,7 @@ Full docs — user stories, architecture diagrams, and per-component reference �
 
 - **Kafka, PostgreSQL, Redis**: `docker compose --env-file env/dev.env up -d` — see [docs/reference/local-dev.md](docs/reference/local-dev.md) for details, ports, and credentials.
 - **Scraper service**: see [docs/reference/scraper.md](docs/reference/scraper.md) for setup, usage, and testing.
+- **Publishing to Kafka**: see [docs/reference/event-stream.md](docs/reference/event-stream.md) for topics, schema, and usage.
 - Other components: setup instructions will be added as they come online.
 
 ## License

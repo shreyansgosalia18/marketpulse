@@ -16,3 +16,8 @@
 ### Local Dev Environment (Docker Compose)
 - User story: [user-stories/local-dev-docker-compose.md](user-stories/local-dev-docker-compose.md)
 - Reference: [reference/local-dev.md](reference/local-dev.md)
+
+### Event Stream (Kafka)
+- User story: [user-stories/kafka-event-producers.md](user-stories/kafka-event-producers.md)
+- Architecture: [architecture/event-stream.md](architecture/event-stream.md)
+- Reference: [reference/event-stream.md](reference/event-stream.md)
