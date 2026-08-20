@@ -21,3 +21,8 @@
 - User story: [user-stories/kafka-event-producers.md](user-stories/kafka-event-producers.md)
 - Architecture: [architecture/event-stream.md](architecture/event-stream.md)
 - Reference: [reference/event-stream.md](reference/event-stream.md)
+
+### Sentiment Pipeline
+- User story: [user-stories/sentiment-scoring-pipeline.md](user-stories/sentiment-scoring-pipeline.md)
+- Architecture: [architecture/sentiment-pipeline.md](architecture/sentiment-pipeline.md)
+- Reference: [reference/sentiment-pipeline.md](reference/sentiment-pipeline.md)
